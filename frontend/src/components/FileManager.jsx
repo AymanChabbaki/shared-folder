@@ -72,6 +72,16 @@ export default function FileManager() {
     }
   };
 
+  const handleDelete = async (item) => {
+    try {
+      const fullPath = currentPath ? `${currentPath}/${item.name}` : item.name;
+      await deleteItem(fullPath);
+      loadFiles();
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Breadcrumbs currentPath={currentPath} onNavigate={handleNavigate} />
