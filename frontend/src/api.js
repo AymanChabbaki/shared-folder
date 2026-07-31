@@ -1,7 +1,22 @@
 export const API_URL = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
+let currentToken = null;
+export const setAuthToken = (token) => {
+  currentToken = token;
+};
+
+const getHeaders = () => {
+  const headers = {};
+  if (currentToken) {
+    headers['Authorization'] = `Bearer ${currentToken}`;
+  }
+  return headers;
+};
+
 export const fetchFiles = async (path = '') => {
-  const res = await fetch(`${API_URL}/files?path=${encodeURIComponent(path)}`);
+  const res = await fetch(`${API_URL}/files?path=${encodeURIComponent(path)}`, {
+    headers: getHeaders()
+  });
   if (!res.ok) throw new Error('Failed to fetch files');
   return res.json();
 };
@@ -13,7 +28,11 @@ export const uploadFile = async (file, path = '', onProgress) => {
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    
     xhr.open('POST', `${API_URL}/upload`);
+    if (currentToken) {
+      xhr.setRequestHeader('Authorization', `Bearer ${currentToken}`);
+    }
 
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable && onProgress) {
@@ -41,8 +60,11 @@ export const uploadFile = async (file, path = '', onProgress) => {
 export const createFolder = async (name, path = '') => {
   const res = await fetch(`${API_URL}/folder`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, path }),
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders()
+    },
+    body: JSON.stringify({ path, name }),
   });
   if (!res.ok) throw new Error('Failed to create folder');
   return res.json();
@@ -50,10 +72,14 @@ export const createFolder = async (name, path = '') => {
 
 export const downloadFileUrl = (fileName, currentPath) => {
   const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
-  return `${API_URL}/download?path=${encodeURIComponent(fullPath)}`;
+  let url = `${API_URL}/download?path=${encodeURIComponent(fullPath)}`;
+  if (currentToken) url += `&token=${currentToken}`;
+  return url;
 };
 
 export const viewFileUrl = (fileName, currentPath) => {
   const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
-  return `${API_URL}/view?path=${encodeURIComponent(fullPath)}`;
+  let url = `${API_URL}/view?path=${encodeURIComponent(fullPath)}`;
+  if (currentToken) url += `&token=${currentToken}`;
+  return url;
 };

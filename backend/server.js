@@ -3,9 +3,11 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'ultex-cloud-secret-key-2026';
 
 app.use(cors());
 app.use(express.json());
@@ -53,8 +55,34 @@ function getSafePath(userPath) {
   return path.join(STORAGE_ROOT, safePath);
 }
 
+// Auth Middleware
+function authenticateToken(req, res, next) {
+  // Check header or query parameter (for downloads/views)
+  const authHeader = req.headers['authorization'];
+  const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+  
+  if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid or expired token.' });
+    req.user = user;
+    next();
+  });
+}
+
+// 0. POST /api/login - Authenticate user
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === 'Ultex2026@@') {
+    const token = jwt.sign({ authenticated: true }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
 // 1. GET /api/files - List files and directories
-app.get('/api/files', (req, res) => {
+app.get('/api/files', authenticateToken, (req, res) => {
   try {
     const queryPath = req.query.path || '';
     const targetDir = getSafePath(queryPath);
@@ -86,7 +114,7 @@ app.get('/api/files', (req, res) => {
 });
 
 // 2. POST /api/upload - Upload a file
-app.post('/api/upload', upload.single('file'), (req, res) => {
+app.post('/api/upload', authenticateToken, upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
@@ -94,7 +122,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 // 3. POST /api/folder - Create a new folder
-app.post('/api/folder', (req, res) => {
+app.post('/api/folder', authenticateToken, (req, res) => {
   try {
     const { path: folderPath, name } = req.body;
     if (!name) return res.status(400).json({ error: 'Folder name is required' });
@@ -115,7 +143,7 @@ app.post('/api/folder', (req, res) => {
 });
 
 // 4. GET /api/download - Download a file
-app.get('/api/download', (req, res) => {
+app.get('/api/download', authenticateToken, (req, res) => {
   try {
     const filePath = req.query.path;
     if (!filePath) {
@@ -136,7 +164,7 @@ app.get('/api/download', (req, res) => {
 });
 
 // 5. GET /api/view - View a file in browser
-app.get('/api/view', (req, res) => {
+app.get('/api/view', authenticateToken, (req, res) => {
   try {
     const filePath = req.query.path;
     if (!filePath) {
