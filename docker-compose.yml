@@ -9,5 +9,5 @@ services:
       # Exposes the container's internal port 3000 to port 3050 on your Ubuntu host
       - "3050:3000"
     volumes:
-      # Maps your actual Ubuntu folder to the container
-      - ./:/app/shared_folder
+      # Maps a dedicated 'storage' folder inside your project to the container
+      - ./storage:/app/shared_folder
