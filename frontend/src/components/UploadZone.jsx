@@ -88,14 +88,14 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
         onChange={handleFileChange}
       />
       
-      <UploadCloud size={48} className="upload-icon" style={{ pointerEvents: 'none' }} />
+      <UploadCloud size={48} className="upload-icon" />
       
-      <div className="upload-text" style={{ pointerEvents: 'none' }}>
+      <div className="upload-text">
         {isUploading ? 'Uploading...' : 'Click or drag file to this area to upload'}
       </div>
       
       {!isUploading && (
-        <div className="upload-subtext" style={{ pointerEvents: 'none' }}>
+        <div className="upload-subtext">
           Supports any file format. It will be uploaded to the current directory.
         </div>
       )}

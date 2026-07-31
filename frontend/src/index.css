@@ -278,6 +278,7 @@ body {
 .upload-icon {
   color: var(--text-secondary);
   transition: color var(--transition-speed);
+  pointer-events: none;
 }
 
 .upload-zone:hover .upload-icon, .upload-zone.drag-active .upload-icon {
@@ -287,11 +288,13 @@ body {
 .upload-text {
   font-size: 1.2rem;
   color: var(--text-primary);
+  pointer-events: none;
 }
 
 .upload-subtext {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  pointer-events: none;
 }
 
 .progress-bar-container {
