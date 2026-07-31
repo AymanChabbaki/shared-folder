@@ -9,12 +9,13 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('ultex_token') || null);
 
   useEffect(() => {
-    // Set the token in the API module whenever it changes
-    setAuthToken(token);
-  }, [token]);
+    // Set the token on initial load
+    if (token) setAuthToken(token);
+  }, []);
 
   const handleLogin = (newToken) => {
     localStorage.setItem('ultex_token', newToken);
+    setAuthToken(newToken); // Set this synchronously before state update
     setToken(newToken);
   };
 

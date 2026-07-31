@@ -1,6 +1,6 @@
 export const API_URL = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
-let currentToken = null;
+let currentToken = localStorage.getItem('ultex_token') || null;
 export const setAuthToken = (token) => {
   currentToken = token;
 };
