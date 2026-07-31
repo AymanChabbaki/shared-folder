@@ -184,6 +184,29 @@ app.get('/api/view', authenticateToken, (req, res) => {
   }
 });
 
+// 6. DELETE /api/delete - Delete a file or folder
+app.delete('/api/delete', authenticateToken, (req, res) => {
+  try {
+    const filePath = req.query.path;
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    const targetFile = getSafePath(filePath);
+
+    if (!fs.existsSync(targetFile)) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    // Force deletion of file or directory recursively
+    fs.rmSync(targetFile, { recursive: true, force: true });
+    res.json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete item' });
+  }
+});
+
 // Serve static frontend in production
 const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));

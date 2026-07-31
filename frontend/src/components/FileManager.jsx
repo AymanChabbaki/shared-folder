@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchFiles, uploadFile, createFolder } from '../api';
+import { fetchFiles, uploadFile, createFolder, deleteItem } from '../api';
 import Breadcrumbs from './Breadcrumbs';
 import UploadZone from './UploadZone';
 import FileGrid from './FileGrid';
@@ -115,6 +115,7 @@ export default function FileManager() {
           files={files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))} 
           currentPath={currentPath} 
           onNavigate={handleNavigate} 
+          onDelete={handleDelete}
         />
       )}
 

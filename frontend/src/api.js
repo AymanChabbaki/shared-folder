@@ -81,6 +81,16 @@ export const downloadFileUrl = (fileName, currentPath) => {
 export const viewFileUrl = (fileName, currentPath) => {
   const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
   let url = `${API_URL}/view?path=${encodeURIComponent(fullPath)}`;
-  if (currentToken) url += `&token=${currentToken}`;
+  const t = localStorage.getItem('ultex_token');
+  if (t) url += `&token=${t}`;
   return url;
+};
+
+export const deleteItem = async (path) => {
+  const res = await fetch(`${API_URL}/delete?path=${encodeURIComponent(path)}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error('Failed to delete item');
+  return res.json();
 };

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Folder, File, Download, Eye } from 'lucide-react';
+import { Folder, File, Download, Eye, Trash2 } from 'lucide-react';
 import { downloadFileUrl, viewFileUrl } from '../api';
 
-export default function FileGrid({ files, currentPath, onNavigate }) {
+export default function FileGrid({ files, currentPath, onNavigate, onDelete }) {
   if (!files || files.length === 0) {
     return (
       <div className="empty-state glass">
@@ -46,6 +46,13 @@ export default function FileGrid({ files, currentPath, onNavigate }) {
     window.open(url, '_blank');
   };
 
+  const handleDelete = (e, item) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to permanently delete "${item.name}"?`)) {
+      onDelete(item);
+    }
+  };
+
   return (
     <div className="file-grid">
       {files.map((item, index) => (
@@ -76,24 +83,34 @@ export default function FileGrid({ files, currentPath, onNavigate }) {
             {item.isDirectory && 'Folder'}
           </div>
 
-          {!item.isDirectory && (
-            <div className="file-actions">
-              <button 
-                className="icon-btn" 
-                title="View"
-                onClick={(e) => handleView(e, item)}
-              >
-                <Eye size={16} />
-              </button>
-              <button 
-                className="icon-btn" 
-                title="Download"
-                onClick={(e) => handleDownload(e, item)}
-              >
-                <Download size={16} />
-              </button>
-            </div>
-          )}
+          <div className="file-actions">
+            {!item.isDirectory && (
+              <>
+                <button 
+                  className="icon-btn" 
+                  title="View"
+                  onClick={(e) => handleView(e, item)}
+                >
+                  <Eye size={16} />
+                </button>
+                <button 
+                  className="icon-btn" 
+                  title="Download"
+                  onClick={(e) => handleDownload(e, item)}
+                >
+                  <Download size={16} />
+                </button>
+              </>
+            )}
+            <button 
+              className="icon-btn" 
+              title="Delete"
+              onClick={(e) => handleDelete(e, item)}
+              style={{ color: '#ef4444' }}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
       ))}
     </div>
