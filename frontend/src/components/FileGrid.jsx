@@ -102,6 +102,11 @@ export default function FileGrid({ files, currentPath, onNavigate, onDelete }) {
                 </button>
               </>
             )}
+            {/* 
+              USER NOTE: Delete button is hidden per request.
+              Uncomment the button below to re-enable deletion from the frontend.
+            */}
+            {/*
             <button 
               className="icon-btn" 
               title="Delete"
@@ -110,6 +115,7 @@ export default function FileGrid({ files, currentPath, onNavigate, onDelete }) {
             >
               <Trash2 size={16} />
             </button>
+            */}
           </div>
         </div>
       ))}
