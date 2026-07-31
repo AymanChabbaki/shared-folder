@@ -7,6 +7,7 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -28,16 +29,33 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
     }
   };
 
-  const processFile = async (file) => {
-    if (!file) return;
+  const processFiles = async (fileList) => {
+    if (!fileList || fileList.length === 0) return;
     
     setIsUploading(true);
     setProgress(0);
     
     try {
-      await uploadFile(file, currentPath, (percent) => {
-        setProgress(percent);
-      });
+      let completed = 0;
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        
+        // Preserve folder structure if webkitRelativePath exists
+        let targetPath = currentPath;
+        if (file.webkitRelativePath) {
+          const parts = file.webkitRelativePath.split('/');
+          if (parts.length > 1) {
+            const relativeDir = parts.slice(0, -1).join('/');
+            targetPath = currentPath ? `${currentPath}/${relativeDir}` : relativeDir;
+          }
+        }
+        
+        await uploadFile(file, targetPath, (percent) => {
+          const overallProgress = ((completed * 100) + percent) / fileList.length;
+          setProgress(overallProgress);
+        });
+        completed++;
+      }
       onUploadComplete();
     } catch (error) {
       alert(`Upload failed: ${error.message}`);
@@ -53,21 +71,23 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
     setIsDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Just taking the first file for simplicity, but could be extended to multiple
-      await processFile(e.dataTransfer.files[0]);
+      await processFiles(Array.from(e.dataTransfer.files));
     }
   };
 
-  const handleClick = () => {
-    if (!isUploading) {
-      fileInputRef.current?.click();
-    }
+  const handleFileClick = (e) => {
+    e.stopPropagation();
+    if (!isUploading) fileInputRef.current?.click();
+  };
+
+  const handleFolderClick = (e) => {
+    e.stopPropagation();
+    if (!isUploading) folderInputRef.current?.click();
   };
 
   const handleFileChange = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      await processFile(e.target.files[0]);
-      // Reset input so the same file can be selected again if needed
+      await processFiles(Array.from(e.target.files));
       e.target.value = '';
     }
   };
@@ -79,11 +99,20 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onClick={handleClick}
     >
       <input 
         type="file" 
+        multiple
         ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileChange}
+      />
+      <input 
+        type="file" 
+        webkitdirectory=""
+        directory=""
+        multiple
+        ref={folderInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileChange}
       />
@@ -91,12 +120,13 @@ export default function UploadZone({ currentPath, onUploadComplete }) {
       <UploadCloud size={48} className="upload-icon" />
       
       <div className="upload-text">
-        {isUploading ? 'Uploading...' : 'Click or drag file to this area to upload'}
+        {isUploading ? 'Uploading...' : 'Drag & drop files here or use the buttons below'}
       </div>
       
       {!isUploading && (
-        <div className="upload-subtext">
-          Supports any file format. It will be uploaded to the current directory.
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', zIndex: 2 }}>
+          <button className="btn" onClick={handleFileClick}>Select Files</button>
+          <button className="btn btn-primary" onClick={handleFolderClick}>Upload Folder</button>
         </div>
       )}
 
