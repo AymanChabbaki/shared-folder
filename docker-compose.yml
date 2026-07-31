@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ultex-cloud:
+    build: .
+    container_name: ultex-cloud-app
+    restart: unless-stopped
+    ports:
+      # Exposes the container's internal port 3000 to port 3050 on your Ubuntu host
+      - "3050:3000"
+    volumes:
+      # Maps a persistent Docker volume to the folder the backend is reading from
+      - ultex_shared_data:/app/shared_folder
+
+volumes:
+  ultex_shared_data:
