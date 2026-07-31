@@ -7,8 +7,9 @@ export const setAuthToken = (token) => {
 
 const getHeaders = () => {
   const headers = {};
-  if (currentToken) {
-    headers['Authorization'] = `Bearer ${currentToken}`;
+  const t = localStorage.getItem('ultex_token');
+  if (t) {
+    headers['Authorization'] = `Bearer ${t}`;
   }
   return headers;
 };
